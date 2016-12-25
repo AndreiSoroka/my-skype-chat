@@ -7,12 +7,30 @@ const until = webdriver.until;
  * @class
  */
 class MySkypeChat {
-  constructor({login = null, password = null, browser = 'chrome'}) {
+  /**
+   * @constructor
+   * @param {string} login
+   * @param {string} password
+   * @param {string} browser
+   * @param {number} timingParse
+   * @param {number} limitSkypeHistory
+   */
+  constructor({
+    login = null,
+    password = null,
+    browser = 'chrome',
+    timingParse = 1500,
+    limitSkypeHistory = 500,
+  }) {
 
-    this.events = [];
+    this.events = {
+      onMessage: []
+    };
     this.idParser = null;
+    this.timingParse = timingParse;
     this.lastMessageId = null;
     this.lastUser = null;
+    this.limitSkypeHistory = limitSkypeHistory;
 
     this.driver = new webdriver.Builder()
       .forBrowser(browser)
@@ -38,9 +56,29 @@ class MySkypeChat {
   }
 
   /**
+   * Refresh skype page
+   */
+  refresh() {
+    console.log('>! stop parser');
+    console.log('reload skype page');
+    clearTimeout(this.idParser);
+
+    // wait all promises :)
+    this.driver.sleep(1500);
+    this.driver.navigate().refresh();
+    this.setChannel(this.channel).then(()=>{
+      console.log('>! start skype parser');
+      this.idParser = null;
+      this._parser();
+    });
+  }
+
+  /**
+   * Set channel in skype
    * @param {string} channel
    */
   setChannel(channel = '') {
+    this.channel = channel;
     return new Promise((resolve, reject) => {
       let searchInput = By.css('.search.beforeMenuItems input[role="search"]');
       this.driver.wait(until.elementLocated(searchInput), 180000);
@@ -58,7 +96,7 @@ class MySkypeChat {
   }
 
   /**
-   *
+   * Send message in skype
    * @param message
    */
   sendMessage(message) {
@@ -71,28 +109,41 @@ class MySkypeChat {
     this.driver.findElement(_button).click();
   }
 
+  /**
+   * Add trigger on new message
+   * @param {Function} callback
+   */
   onMessage(callback) {
-    this.events.push(callback);
+    this.events.onMessage.push(callback);
     this._parser();
   }
 
+  /**
+   * Remove trigger
+   * @param {Function} callback
+   */
   offMessage(callback) {
-    let index = this.events.indexOf(callback);
+    let index = this.events.onMessage.indexOf(callback);
     if (index != -1) {
-      this.events.splice(index, 1);
+      this.events.onMessage.splice(index, 1);
     }
     this._parser();
   }
 
+  /**
+   * Set {@see this.lastMessageId }
+   * @returns {Promise.<TResult>|!Thenable.<R>|*}
+   */
   setLastId() {
-    this._parseMessages().then((messages) => {
+    return this._parseMessages().then((messages) => {
       this.lastMessageId = messages[0].id;
     });
   }
 
   _parser() {
-    if (!this.events.length) {
+    if (!this.events.onMessage.length) {
       clearTimeout(this.idParser);
+      this.idParser = null;
       return;
     }
     if (this.idParser) {
@@ -128,12 +179,15 @@ class MySkypeChat {
     this.idParser = setTimeout(() => {
       this.idParser = null;
       this._parser();
-    }, 7000);
+    }, this.timingParse);
   }
 
   _parseMessages() {
     return this.driver.findElements(By.css('.messageHistory swx-message')).then((elements_arr) => {
       console.log('parse elements:', elements_arr.length);
+      if (elements_arr.length > this.limitSkypeHistory){
+        this.refresh();
+      }
       let results = [];
       let p = Promise.resolve(results);
       for (let i = elements_arr.length - 1; i >= 0; --i) {
@@ -181,9 +235,9 @@ class MySkypeChat {
         answer.user = results2[2];
         answer.isBot = results2[3];
 
-        if (answer.isBot){
+        if (answer.isBot) {
           this.lastUser = null;
-        } else if (!answer.user && !answer.isBot && this.lastUser){
+        } else if (!answer.user && !answer.isBot && this.lastUser) {
           answer.user = this.lastUser;
         } else if (answer.user) {
           this.lastUser = answer.user;
@@ -194,7 +248,7 @@ class MySkypeChat {
   }
 
   _sendEvents(message) {
-    this.events.forEach((callback) => {
+    this.events.onMessage.forEach((callback) => {
       if (callback && typeof callback == 'function') {
         callback(message);
       }
