@@ -103,6 +103,7 @@ class MySkypeChat {
     let _textarea = By.css('#chatInputAreaWithQuotes');
     this.driver.wait(until.elementLocated(_textarea), 5000);
     let $textarea = this.driver.findElement(_textarea);
+    this.driver.wait(until.elementIsVisible($textarea), 25000);
     $textarea.click();
     $textarea.sendKeys(message);
     let _button = By.css('.upper-row-form .send-button-holder button');
