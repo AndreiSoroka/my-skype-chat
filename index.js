@@ -12,6 +12,7 @@ class MySkypeChat {
     this.events = [];
     this.idParser = null;
     this.lastMessageId = null;
+    this.lastUser = null;
 
     this.driver = new webdriver.Builder()
       .forBrowser(browser)
@@ -157,14 +158,37 @@ class MySkypeChat {
     return Promise.all([
       message.getAttribute('data-id'),
       message.findElement(By.className('content')),
+      message.getAttribute('class')
       // message.findElement(By.css('.tileName h4'))
     ]).then(results => {
-      let id = results[0];
-      return Promise.all([
-        results[1].getText(),
-        // results[2].getText()
-      ]).then((results2) => {
-        return {id, message: results2[0]}; //, user: results2[1]}
+      // let id = results[0];
+      let arrayPromise = [
+        results[0],
+        results[1].getText()
+      ];
+      let className = results[2].split(" ");
+      if (className.indexOf('me') != -1) {
+        arrayPromise.push(null);
+        arrayPromise.push(true);
+      } else if (className.indexOf('first') != -1 && className.indexOf('me') == -1) {
+        arrayPromise.push(message.findElement(By.css('.tileName h4')).getText());
+        arrayPromise.push(false);
+      }
+      return Promise.all(arrayPromise).then((results2) => {
+        let answer = {};
+        answer.id = results2[0];
+        answer.message = results2[1];
+        answer.user = results2[2];
+        answer.isBot = results2[3];
+
+        if (answer.isBot){
+          this.lastUser = null;
+        } else if (!answer.user && !answer.isBot && this.lastUser){
+          answer.user = this.lastUser;
+        } else if (answer.user) {
+          this.lastUser = answer.user;
+        }
+        return answer;
       });
     })
   }
