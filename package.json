@@ -1,0 +1,27 @@
+{
+  "name": "my-skype-chat",
+  "version": "1.0.0",
+  "description": "Unofficial Skype API for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreiSoroka/my-skype-chat.git"
+  },
+  "author": {
+    "name": "Andrei Soroka",
+    "email": "unickpro@gmail.com",
+    "url": "http://andreisoroka.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AndreiSoroka/my-skype-chat/issues"
+  },
+  "homepage": "https://github.com/AndreiSoroka/my-skype-chat#readme",
+  "dependencies": {
+    "chromedriver": "^2.26.1",
+    "selenium-webdriver": "^3.0.1"
+  }
+}
