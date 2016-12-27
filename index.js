@@ -1,7 +1,9 @@
-require('chromedriver');
 const webdriver = require('selenium-webdriver');
 const By = webdriver.By;
 const until = webdriver.until;
+
+let phantomjs = webdriver.Capabilities.phantomjs();
+let chrome = require('selenium-webdriver/chrome');
 
 /**
  * @class
@@ -18,10 +20,28 @@ class MySkypeChat {
   constructor({
     login = null,
     password = null,
-    browser = 'chrome',
+    browser = 'phantomjs',
     timingParse = 1500,
     limitSkypeHistory = 500,
   }) {
+
+    switch (browser) {
+      case 'phantomjs':
+        phantomjs.set("phantomjs.binary.path", require('phantomjs-prebuilt').path);
+        this.driver = new webdriver.Builder()
+          .withCapabilities(phantomjs)
+          .build();
+        break;
+      case 'chrome':
+        chrome.setDefaultService(new chrome.ServiceBuilder(require('chromedriver').path).build());
+        this.driver = new webdriver.Builder()
+        .forBrowser('chrome')
+          .build();
+        break;
+      default:
+        console.error('I don\'t know browser', browser);
+        return;
+    }
 
     this.events = {
       onMessage: []
@@ -31,10 +51,6 @@ class MySkypeChat {
     this.lastMessageId = null;
     this.lastUser = null;
     this.limitSkypeHistory = limitSkypeHistory;
-
-    this.driver = new webdriver.Builder()
-      .forBrowser(browser)
-      .build();
 
     if (login && password) {
       this.login(login, password);
@@ -66,7 +82,7 @@ class MySkypeChat {
     // wait all promises :)
     this.driver.sleep(1500);
     this.driver.navigate().refresh();
-    this.setChannel(this.channel).then(()=>{
+    this.setChannel(this.channel).then(() => {
       console.log('>! start skype parser');
       this.idParser = null;
       this._parser();
@@ -186,7 +202,7 @@ class MySkypeChat {
   _parseMessages() {
     return this.driver.findElements(By.css('.messageHistory swx-message')).then((elements_arr) => {
       console.log('parse elements:', elements_arr.length);
-      if (elements_arr.length > this.limitSkypeHistory){
+      if (elements_arr.length > this.limitSkypeHistory) {
         this.refresh();
       }
       let results = [];
