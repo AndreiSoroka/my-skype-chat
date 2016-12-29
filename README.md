@@ -23,3 +23,13 @@ skype.setChannel('SEOCAFE').then(() => { // Какой канал будем п�
   });
 });
 ```
+
+custom `skype.driver` (build browser), `skype.webdriver` (lib), `skype.By` (webdriver.By), `skype.util`(webdriver.util) 
+```javascript
+// save screenshot
+skype.driver.takeScreenshot().then(function (image, err) {
+      require('fs').writeFile(fileName + '.png', image, 'base64', function (err) {
+        console.log(err);
+      });
+    });
+```

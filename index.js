@@ -24,6 +24,9 @@ class MySkypeChat {
     timingParse = 1500,
     limitSkypeHistory = 500,
   }) {
+    this.By = By;
+    this.until = until;
+    this.webdriver = webdriver;
 
     switch (browser) {
       case 'phantomjs':
@@ -31,12 +34,14 @@ class MySkypeChat {
         this.driver = new webdriver.Builder()
           .withCapabilities(phantomjs)
           .build();
+        this.driver.manage().window().maximize();
         break;
       case 'chrome':
         chrome.setDefaultService(new chrome.ServiceBuilder(require('chromedriver').path).build());
         this.driver = new webdriver.Builder()
-        .forBrowser('chrome')
+          .forBrowser('chrome')
           .build();
+        this.driver.manage().window().setSize(700, 800);
         break;
       default:
         console.error('I don\'t know browser', browser);
