@@ -177,6 +177,22 @@ class MySkypeChat {
       }
 
       let messageLength = messages.length;
+
+      // search username
+      for (let i = messageLength - 1; i >= 0; --i) {
+        let answer = messages[i];
+        if (!answer || !answer.id) {
+          continue;
+        }
+        if (answer.isBot) {
+          this.lastUser = null;
+        } else if (!answer.user && !answer.isBot && this.lastUser) {
+          answer.user = this.lastUser;
+        } else if (answer.user) {
+          this.lastUser = answer.user;
+        }
+      }
+
       let messageResult = [];
       for (let i = 0; i < messageLength; ++i) {
         let message = messages[i];
@@ -206,7 +222,6 @@ class MySkypeChat {
 
   _parseMessages() {
     return this.driver.findElements(By.css('.messageHistory swx-message')).then((elements_arr) => {
-      console.log('parse elements:', elements_arr.length);
       if (elements_arr.length > this.limitSkypeHistory) {
         this.refresh();
       }
@@ -257,13 +272,6 @@ class MySkypeChat {
         answer.user = results2[2];
         answer.isBot = results2[3];
 
-        if (answer.isBot) {
-          this.lastUser = null;
-        } else if (!answer.user && !answer.isBot && this.lastUser) {
-          answer.user = this.lastUser;
-        } else if (answer.user) {
-          this.lastUser = answer.user;
-        }
         return answer;
       });
     })
