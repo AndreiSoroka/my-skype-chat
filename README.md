@@ -9,16 +9,16 @@ Example:
 const MySkypeChat = require('my-skype-chat');
 
 let skype = new MySkypeChat({
-  login: 'my login', // Логин скайпа. Важно для входа.
-  password: 'my password', // Пароль скайпа. Важно для входа.
-  browser: 'chrome', // Браузер. Дефолтно chrome
-  timingParse: 1500, // Время итерации для сбора сообщений. Дефолтно 1500мс
-  limitSkypeHistory: 500, // Через какое кол-во сообщений в истории скайпа перезагрузить страницу. Дефолтно 500
+  login: 'my login',
+  password: 'my password',
+  browser: 'chrome',
+  timingParse: 1500, // iteration time for parsing new messages
+  limitSkypeHistory: 500, // if you accumulate 500 (default) messages then script reloads Skype's page.
 });
 
-skype.setChannel('SEOCAFE').then(() => { // Какой канал будем парсить
-  skype.setLastId(); // Чтобы не парсить историю, мы просто найдем последнее сообщение.
-  skype.onMessage((message) => { // Callback на новое сообщение.
+skype.setChannel('SEOCAFE').then(() => { // Channel
+  skype.setLastId(); // In order not to parse the story, we will simply find the last message.
+  skype.onMessage((message) => { // Callback for new messages
     console.log(message);
   });
 });
