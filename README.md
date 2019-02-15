@@ -1,9 +1,15 @@
+### ATTENTION!
+I do not support this library. Sorry and thanks!
+
+
+### How to start
+
 Library for parsing web-skype.
 ```
 $ npm i my-skype-chat --save
 ```
 
-Example:
+### Example:
 
 ```javascript
 const MySkypeChat = require('my-skype-chat');
